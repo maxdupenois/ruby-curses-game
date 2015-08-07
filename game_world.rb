@@ -44,9 +44,10 @@ class GameWorld
   end
 
   def move(entity, x, y)
-    return [entity.x, entity.y] unless can_place_entity?(entity, x, y)
+    return false unless can_place_entity?(entity, x, y)
     map_remove(entity.x, entity.y, entity)
     map_put(x, y, entity)
+    true
   end
 
   private
