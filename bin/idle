@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require_relative '../idle.rb'
+
+def onsig(sig)
+  puts "SIGNAL RECEIVED #{sig}"
+  exit sig
+end
+
+Idle.new.start
