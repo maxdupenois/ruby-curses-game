@@ -38,30 +38,9 @@ class GameWorld
           next
         end
         entity = entities.sort_by { |e| e.draw_priority }.first
-        window.draw(entity.char, x+1, y+1)
+        window.draw(entity.char, x+1, y+1, colour: entity.colour)
       end
     end
-    window.status(@status) if @status
-  end
-
-  def print_map
-    buffer = []
-    buffer << ('-' * (width + 2))
-    buffer << "\n"
-    height.times do |y| 
-      buffer << '|'
-      width.times do |x| 
-        entities = map_get(x, y).select { |e| e.drawable? }
-        buffer << " " and next if entities.empty?
-        entity = entities.sort_by { |e| e.draw_priority }.first
-        entity.print(buffer)
-      end
-      buffer << '|'
-      buffer << "\n"
-    end
-    buffer << ('-' * (width + 2))
-    puts buffer.join('')
-    true
   end
 
   def move(entity, x, y)

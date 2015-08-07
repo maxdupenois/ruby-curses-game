@@ -13,7 +13,7 @@ module Entities
       y = move_x ? 0 : rand(3) - 1
       if can_move?(ms)
         @ms_since_last_move = 0
-        current_scene.status_message("Moving by (#{x}, #{y})")
+        current_scene.status_message("Moving by (#{x}, #{y})", colour: Window::Colour::CYAN_ON_BLACK)
         move(x, y)
       else
         @ms_since_last_move += ms

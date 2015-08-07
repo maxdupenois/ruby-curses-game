@@ -35,8 +35,8 @@ class IdleGameScene < Scene
     game_world.command_received(command)
   end
 
-  def status_message(message)
-    status << message
+  def status_message(message, colour: Window::Colour::DEFAULT)
+    status << [message, colour]
     status.shift if status.size > MAX_STATUS_LENGTH
   end
 
@@ -46,9 +46,9 @@ class IdleGameScene < Scene
     game_world.draw(game_world_window)
     game_world_window.refresh
 
-    status.reverse.each_with_index do |message, y|
-      status_window.draw(' ' * (Window.width - 2), 1, y + 1)
-      status_window.draw(message, 3, y + 1)
+    status.reverse.each_with_index do |(message, colour), y|
+      status_window.draw(' ' * (Window.width - 3), 1, y + 1)
+      status_window.draw(message, 3, y + 1, colour: colour)
     end
 
     status_window.refresh

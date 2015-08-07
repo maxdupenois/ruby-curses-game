@@ -13,11 +13,21 @@ module Entities::Behaviours
         @char
       end
 
+      def colour(colour=nil)
+        @colour ||= Window::Colour::DEFAULT
+        @colour = colour if colour
+        @colour
+      end
+
       def draw_priority(priority=nil)
         @draw_priority ||= 1
         @draw_priority = priority if priority
         @draw_priority
       end
+    end
+
+    def colour
+      self.class.colour
     end
 
     def char

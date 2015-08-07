@@ -41,23 +41,6 @@ class Window < Curses::Window
     move(self.class.height + 1, self.class.width + 1)
   end
 
-
-#  def buffer(&block)
-#    raise CannotBufferBufferedWindowError.new('Buffered windows can not be used as the primary from which to buffer') if buffer_window?
-#    if primary_is_visible?
-#      buffer_window.empty
-#      block.call(buffer_window)
-#      #Show is enough to make it the only visible window
-#      buffer_window.show
-#      @primary_is_visible = false
-#    else
-#      empty
-#      block.call(self)
-#      show
-#      @primary_is_visible = true
-#    end
-#  end
-
   def centre
     move_to(width/2, height/2)
   end
@@ -72,9 +55,13 @@ class Window < Curses::Window
     setpos(y, x)
   end
 
-  def draw(str, x=nil, y=nil)
+  def draw(str, x=nil, y=nil, attrs: [], colour: nil)
     move_to(x, y) if x
+    attrs << Window.colour_pair(colour) if colour
+    attrs = attrs.reduce(attrs.shift) { |xor, attr| xor ^ attr}
+    attron(attrs) if attrs
     addstr(str)
+    attroff(attrs) if attrs
   end
 
 #  def status(message)
@@ -86,6 +73,7 @@ class Window < Curses::Window
 #  end
 
   class << self
+
     include Curses
 
     def gets
@@ -118,6 +106,7 @@ class Window < Curses::Window
       noecho
       timeout = 0
       stdscr.keypad = true
+      init_colour_pairs!
       @running = true
     rescue => e
       puts e.message
@@ -128,16 +117,34 @@ class Window < Curses::Window
       @running = false
       close_screen
     end
+
+    def colour_pair(num)
+      color_pair(num)
+    end
+
+    private
+
+    def init_colour_pairs!
+      start_color
+      init_pair(Colour::RED_ON_BLACK, COLOR_RED, COLOR_BLACK)
+      init_pair(Colour::GREEN_ON_BLACK, COLOR_GREEN, COLOR_BLACK)
+      init_pair(Colour::YELLOW_ON_BLACK, COLOR_YELLOW, COLOR_BLACK)
+      init_pair(Colour::BLUE_ON_BLACK, COLOR_BLUE, COLOR_BLACK)
+      init_pair(Colour::CYAN_ON_BLACK, COLOR_CYAN, COLOR_BLACK)
+      init_pair(Colour::MAGENTA_ON_BLACK, COLOR_MAGENTA, COLOR_BLACK)
+      init_pair(Colour::WHITE_ON_BLACK, COLOR_WHITE, COLOR_BLACK)
+    end
   end
 
-  private
-
-  def buffer_window
-    @buffer_window ||= self.class.new(width: width,
-                   height: height,
-                   x: parent_x,
-                   y: parent_y,
-                   is_buffer_window: true
-                  )#.tap { |win| win.attron(Curses::A_INVIS) }
+  class Colour
+    DEFAULT = 0
+    RED_ON_BLACK = 1
+    GREEN_ON_BLACK = 2
+    YELLOW_ON_BLACK = 3
+    BLUE_ON_BLACK = 4
+    CYAN_ON_BLACK = 5
+    MAGENTA_ON_BLACK = 6
+    WHITE_ON_BLACK = 7
   end
+
 end
