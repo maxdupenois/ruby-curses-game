@@ -50,13 +50,70 @@ class GameWorld
     true
   end
 
+  def entities_within_range(entity, range)
+    entities = []
+    radar(entity.x, entity.y, range) do |x, y|
+      entities += map_get(x, y)
+    end
+    entities
+  end
+
+  def status_message(msg)
+    Game.current.current_scene.status_message(msg)
+  end
+
+  def radar(x, y, radius, &block)
+    origin_x = x
+    origin_y = y
+    while(radius > 0)
+      stack = []
+      north = [origin_x, origin_y - radius]
+      east = [origin_x + radius, origin_y]
+      south = [origin_x, origin_y + radius]
+      west = [origin_x - radius, origin_y]
+      current = north.dup
+      #traverse north to east
+      while(current != east)
+        block.call(current) if on_map?(*current)
+        current[0] += 1
+        current[1] += 1
+      end
+
+      ##traverse east to south
+      while(current != south)
+        block.call(current) if on_map?(*current)
+        current[0] += -1
+        current[1] += 1
+      end
+
+      ##traverse south to west
+      while(current != west)
+        block.call(current) if on_map?(*current)
+        current[0] += -1
+        current[1] += -1
+      end
+
+      ##traverse west to north
+      while(current != north)
+        block.call(current) if on_map?(*current)
+        current[0] += 1
+        current[1] += -1
+      end
+      radius -= 1
+    end
+  end
+
   private
 
   def can_place_entity?(entity, x, y)
-    return false if x < 0 || x >= width || y < 0 || y >= height
+    return false unless on_map?(x, y)
     currently_there = map_get(x, y)
     return false if currently_there.any? { |e| e.blocking? }
     !(currently_there.any? && entity.blocking?)
+  end
+
+  def on_map?(x, y)
+    x >= 0 && x < width && y >= 0 && y < height
   end
 
   def map_get(x, y)

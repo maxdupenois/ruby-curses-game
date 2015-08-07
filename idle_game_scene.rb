@@ -75,7 +75,11 @@ class IdleGameScene < Scene
     mammal = Entities::SmallMammal.new(game_world)
     mammal.x = 3
     mammal.y = 3
+    wolf = Entities::Wolf.new(game_world)
+    wolf.x = 6
+    wolf.y = 6
     game_world.add_entity(player)
+    game_world.add_entity(wolf)
     game_world.add_entity(mammal)
     game_world.add_entity(tree)
   end

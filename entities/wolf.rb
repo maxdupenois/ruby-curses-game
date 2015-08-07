@@ -1,27 +1,33 @@
 module Entities
-  class SmallMammal < Entity
+  class Wolf < Entity
     include Entities::Behaviours::Moveable
     include Entities::Behaviours::Drawable
     include Entities::Behaviours::AffectedByTime
-    char 'm'
-    colour Window::Colour::YELLOW_ON_BLACK
+    char 'w'
+    colour Window::Colour::MAGENTA_ON_BLACK
 
-    MS_BETWEEN_EACH_MOVE = 500
+    MS_BETWEEN_EACH_MOVE = 400
 
     def time_advance(ms)
       if can_move?(ms)
-        predator = find_close_predator.first
-        predator ? move_away(predator.x, predator.y) : wander
+        prey = find_close_prey.first
+        prey ? move_toward(prey.x, prey.y) : wander
         @ms_since_last_move = 0
-        wander
       else
         @ms_since_last_move += ms
       end
     end
 
-    def find_close_predator
-      world.entities_within_range(self, 4).select do |e|
-        e.class == Entities::Wolf
+    def wander
+      move_x = rand(2) == 1
+      x = move_x ? rand(3) - 1 : 0
+      y = move_x ? 0 : rand(3) - 1
+      move(x, y)
+    end
+
+    def find_close_prey
+      world.entities_within_range(self, 5).select do |e|
+        e.class == Entities::SmallMammal
       end.sort_by { |p| distance(p) }
     end
 
