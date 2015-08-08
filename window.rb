@@ -55,9 +55,9 @@ class Window < Curses::Window
     setpos(y, x)
   end
 
-  def draw(str, x=nil, y=nil, attrs: [], colour: nil)
+  def draw(str, x=nil, y=nil, attrs: [], colour: nil, brightness: 1)
     move_to(x, y) if x
-    attrs << Window.colour_pair(colour) if colour
+    attrs << Window.colour_pair(colour.index, brightness: brightness) if colour
     attrs = attrs.reduce(attrs.shift) { |xor, attr| xor ^ attr}
     attron(attrs) if attrs
     addstr(str)
@@ -109,8 +109,10 @@ class Window < Curses::Window
       init_colour_pairs!
       @running = true
     rescue => e
-      puts e.message
       finish
+      puts colors
+      puts e.message
+      puts e.backtrace[0..3]
     end
 
     def finish
@@ -118,33 +120,90 @@ class Window < Curses::Window
       close_screen
     end
 
-    def colour_pair(num)
-      color_pair(num)
+    def colour_pair(num, brightness:1)
+      if brightness <= 0
+        # dark
+        color_pair(num)
+      elsif brightness > 0 && brightness < 1
+        # dim
+        color_pair(num + 1)
+      elsif brightness >= 1 && brightness < 2
+        # normal
+        color_pair(num + 2)
+      else brightness >= 2
+        # bright
+        color_pair(num + 3)
+      end
     end
 
     private
 
     def init_colour_pairs!
       start_color
-      init_pair(Colour::RED_ON_BLACK, COLOR_RED, COLOR_BLACK)
-      init_pair(Colour::GREEN_ON_BLACK, COLOR_GREEN, COLOR_BLACK)
-      init_pair(Colour::YELLOW_ON_BLACK, COLOR_YELLOW, COLOR_BLACK)
-      init_pair(Colour::BLUE_ON_BLACK, COLOR_BLUE, COLOR_BLACK)
-      init_pair(Colour::CYAN_ON_BLACK, COLOR_CYAN, COLOR_BLACK)
-      init_pair(Colour::MAGENTA_ON_BLACK, COLOR_MAGENTA, COLOR_BLACK)
-      init_pair(Colour::WHITE_ON_BLACK, COLOR_WHITE, COLOR_BLACK)
+
+      Colour::COLOURS.each do |colour|
+        i = colour.index
+        init_color(i, *colour.dark)
+        init_color(i + 1, *colour.dim)
+        init_color(i + 2, *colour.normal)
+        init_color(i + 3, *colour.bright)
+        init_pair(i, i, COLOR_BLACK) 
+        init_pair(i + 1, i + 1, COLOR_BLACK)
+        init_pair(i + 2, i + 2, COLOR_BLACK)
+        init_pair(i + 3, i + 3, COLOR_BLACK)
+      end
+
+
+      #init_pair(Colour::RED_ON_BLACK, COLOR_RED, COLOR_BLACK)
+      #init_pair(Colour::GREEN_ON_BLACK, COLOR_GREEN, COLOR_BLACK)
+      #init_pair(Colour::YELLOW_ON_BLACK, COLOR_YELLOW, COLOR_BLACK)
+      #init_pair(Colour::BLUE_ON_BLACK, COLOR_BLUE, COLOR_BLACK)
+      #init_pair(Colour::CYAN_ON_BLACK, COLOR_CYAN, COLOR_BLACK)
+      #init_pair(Colour::MAGENTA_ON_BLACK, COLOR_MAGENTA, COLOR_BLACK)
+      #init_pair(Colour::WHITE_ON_BLACK, COLOR_WHITE, COLOR_BLACK)
     end
   end
 
   class Colour
-    DEFAULT = 0
-    RED_ON_BLACK = 1
-    GREEN_ON_BLACK = 2
-    YELLOW_ON_BLACK = 3
-    BLUE_ON_BLACK = 4
-    CYAN_ON_BLACK = 5
-    MAGENTA_ON_BLACK = 6
-    WHITE_ON_BLACK = 7
+    attr_writer :dark, :dim, :bright
+    attr_reader :index, :normal
+    class << self
+      def new_index
+        @index ||= 1
+        new_i = @index
+        @index += 4
+        new_i
+      end
+    end
+
+    def initialize(r, g, b)
+      @normal = [r, g, b]
+      @index = self.class.new_index
+    end
+
+    def bright
+      @bright ||= normal.map {|c| [1000, (c * 1.2)].min.round.to_i }
+    end
+
+    def dim
+      @dim ||= normal.map {|c| (c/2.0).round.to_i }
+    end
+
+    def dark
+      @dark ||= normal.map {|c| (c/4.0).round.to_i }
+    end
+
+    RED = Colour.new(750, 0, 0)
+    GREEN = Colour.new(0, 750, 0)
+    YELLOW = Colour.new(900, 900, 0)
+    BLUE = Colour.new(0, 0, 750)
+    CYAN = Colour.new(0, 900, 900)
+    MAGENTA = Colour.new(900, 0, 900)
+    WHITE = Colour.new(900, 900, 900)
+    DEFAULT = WHITE
+    COLOURS = [RED, GREEN, YELLOW,
+               BLUE, CYAN, MAGENTA,
+               WHITE]
   end
 
 end

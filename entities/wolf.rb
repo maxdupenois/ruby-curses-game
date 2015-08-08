@@ -4,7 +4,7 @@ module Entities
     include Entities::Behaviours::Drawable
     include Entities::Behaviours::AffectedByTime
     char 'w'
-    colour Window::Colour::MAGENTA_ON_BLACK
+    colour Window::Colour::MAGENTA
 
     MS_BETWEEN_EACH_MOVE = 400
 

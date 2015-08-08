@@ -16,7 +16,9 @@ module Entities
     end
 
     BEHAVIOURS = [:moveable, :commandable,
-                  :drawable, :blocking, :affected_by_time]
+                  :light_source,
+                  :drawable, :blocking, 
+                  :affected_by_time]
     BEHAVIOURS.each do |behaviour|
       define_method("#{behaviour}?") { false }
     end
