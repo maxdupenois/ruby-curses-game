@@ -4,16 +4,19 @@ module Entities
     include Entities::Behaviours::Commandable
     include Entities::Behaviours::Drawable
     include Entities::Behaviours::Blocking
+    include Entities::Behaviours::LightSource
     char '@'
-    colour Window::Colour::RED_ON_BLACK
+    light_radius 10
+    max_brightness 5
+    colour Window::Colour::WHITE
     allowed_commands :up, :down, :left, :right
 
     def move(*args)
       moved = super(*args)
       if moved
-        current_scene.status_message("Player moved to (#{x}, #{y})", colour: Window::Colour::CYAN_ON_BLACK)
+        current_scene.status_message("Player moved to (#{x}, #{y})", colour: Window::Colour::BLUE)
       else
-        current_scene.status_message("Blocked", colour: Window::Colour::RED_ON_BLACK)
+        current_scene.status_message("Blocked", colour: Window::Colour::RED)
       end
     end
   end

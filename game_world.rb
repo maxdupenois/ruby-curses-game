@@ -30,6 +30,7 @@ class GameWorld
   end
 
   def draw(window)
+    lighting_map = generate_lighting_map
     height.times do |y| 
       width.times do |x| 
         entities = map_get(x, y).select { |e| e.drawable? }
@@ -37,10 +38,36 @@ class GameWorld
           window.draw(' ', x+1, y+1)
           next
         end
+        brightness = lighting_map[x][y]
         entity = entities.sort_by { |e| e.draw_priority }.first
-        window.draw(entity.char, x+1, y+1, colour: entity.colour)
+        window.draw(entity.char, x+1, y+1,
+                    colour: entity.colour, brightness: brightness)
+        occasional_status("Tree Brightness: #{brightness}") if entity.class == Entities::Tree
       end
     end
+  end
+
+  # Used when debugging draw method
+  def occasional_status(message)
+    @last_printed_occasional_status ||= Time.now.to_i - 5
+    now = Time.now.to_i
+    if now - @last_printed_occasional_status > 2
+      status_message(message)
+      @last_printed_occasional_status = Time.now.to_i
+    end
+  end
+
+  def generate_lighting_map
+    light_sources = entities.select { |e| e.light_source? }
+    lighting_map = Array.new(height) { Array.new(width) { 0 } }
+    light_sources.each do |source|
+      radar(source.x, source.y, source.light_radius) do |x, y, rad|
+        brightness = source.max_brightness / rad.to_f
+        lighting_map[x][y] += brightness
+      end
+      lighting_map[source.x][source.y] += source.max_brightness
+    end
+    lighting_map
   end
 
   def move(entity, x, y)
@@ -59,7 +86,7 @@ class GameWorld
   end
 
   def status_message(msg)
-    Game.current.current_scene.status_message(msg)
+    Game.current.current_scene.status_message(msg.to_s)
   end
 
   def radar(x, y, radius, &block)
@@ -74,28 +101,28 @@ class GameWorld
       current = north.dup
       #traverse north to east
       while(current != east)
-        block.call(current) if on_map?(*current)
+        block.call(*current, radius) if on_map?(*current)
         current[0] += 1
         current[1] += 1
       end
 
       ##traverse east to south
       while(current != south)
-        block.call(current) if on_map?(*current)
+        block.call(*current, radius) if on_map?(*current)
         current[0] += -1
         current[1] += 1
       end
 
       ##traverse south to west
       while(current != west)
-        block.call(current) if on_map?(*current)
+        block.call(*current, radius) if on_map?(*current)
         current[0] += -1
         current[1] += -1
       end
 
       ##traverse west to north
       while(current != north)
-        block.call(current) if on_map?(*current)
+        block.call(*current, radius) if on_map?(*current)
         current[0] += 1
         current[1] += -1
       end

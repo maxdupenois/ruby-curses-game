@@ -4,7 +4,7 @@ module Entities
     include Entities::Behaviours::Drawable
     include Entities::Behaviours::AffectedByTime
     char 'm'
-    colour Window::Colour::YELLOW_ON_BLACK
+    colour Window::Colour::YELLOW
 
     MS_BETWEEN_EACH_MOVE = 500
 
