@@ -34,15 +34,18 @@ class GameWorld
     height.times do |y| 
       width.times do |x| 
         entities = map_get(x, y).select { |e| e.drawable? }
-        if entities.empty?
-          window.draw(' ', x+1, y+1)
-          next
+        begin
+          brightness = lighting_map[y][x]
+        rescue => e
+          raise "#{e.message} #{x}, #{y} #{width}"
         end
-        brightness = lighting_map[x][y]
-        entity = entities.sort_by { |e| e.draw_priority }.first
-        window.draw(entity.char, x+1, y+1,
-                    colour: entity.colour, brightness: brightness)
-        occasional_status("Tree Brightness: #{brightness}") if entity.class == Entities::Tree
+        if entities.empty?
+          window.draw(nil, x+1, y+1, brightness: brightness)
+        else
+          entity = entities.sort_by { |e| e.draw_priority }.first
+          window.draw(entity.char, x+1, y+1,
+                      colour: entity.colour, brightness: brightness)
+        end
       end
     end
   end
@@ -63,9 +66,9 @@ class GameWorld
     light_sources.each do |source|
       radar(source.x, source.y, source.light_radius) do |x, y, rad|
         brightness = source.max_brightness / rad.to_f
-        lighting_map[x][y] += brightness
+        lighting_map[y][x] += brightness
       end
-      lighting_map[source.x][source.y] += source.max_brightness
+      lighting_map[source.y][source.x] += source.max_brightness
     end
     lighting_map
   end

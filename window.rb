@@ -57,7 +57,12 @@ class Window < Curses::Window
 
   def draw(str, x=nil, y=nil, attrs: [], colour: nil, brightness: 1)
     move_to(x, y) if x
-    attrs << Window.colour_pair(colour.index, brightness: brightness) if colour
+    if str.nil?
+      attrs << Window.background_colour_pair(brightness: brightness)
+      str = 'b'
+    elsif colour
+      attrs << Window.colour_pair(colour.index, brightness: brightness)
+    end
     attrs = attrs.reduce(attrs.shift) { |xor, attr| xor ^ attr}
     attron(attrs) if attrs
     addstr(str)
@@ -121,6 +126,7 @@ class Window < Curses::Window
     end
 
     def colour_pair(num, brightness:1)
+      num = num + background_colour_count
       if brightness <= 0
         # dark
         color_pair(num)
@@ -130,29 +136,57 @@ class Window < Curses::Window
       elsif brightness >= 1 && brightness < 2
         # normal
         color_pair(num + 2)
-      else brightness >= 2
+      else
         # bright
         color_pair(num + 3)
       end
     end
 
+    def background_colour_pair(brightness: 0)
+      if brightness <= 0
+        color_pair(dark_background)
+      elsif brightness > 0 && brightness < 1
+        color_pair(dim_background)
+      elsif brightness >= 1 && brightness < 2
+        color_pair(normal_background)
+      else
+        color_pair(bright_background)
+      end
+    end
+
+
     private
 
+    attr_reader :dark_background, :dim_background, :normal_background, :bright_background, :background_colour_count
     def init_colour_pairs!
       start_color
 
+      init_color(0, 0, 0, 0)
+      @dark_background = 1
+      @dim_background = 2
+      @normal_background = 3
+      @bright_background = 4
+      @background_colour_count = 4
+
+      init_color(dark_background, 0, 0, 0)
+      init_color(dim_background, 100, 100, 100)
+      init_color(normal_background, 100, 100, 100)
+      init_color(bright_background, 250, 250, 250)
+      init_pair(dark_background, dark_background, dark_background)
+      init_pair(dim_background, dim_background, dim_background)
+      init_pair(normal_background, normal_background, normal_background)
+      init_pair(bright_background, bright_background, bright_background)
       Colour::COLOURS.each do |colour|
-        i = colour.index
+        i = colour.index + background_colour_count
         init_color(i, *colour.dark)
         init_color(i + 1, *colour.dim)
         init_color(i + 2, *colour.normal)
         init_color(i + 3, *colour.bright)
-        init_pair(i, i, COLOR_BLACK) 
-        init_pair(i + 1, i + 1, COLOR_BLACK)
-        init_pair(i + 2, i + 2, COLOR_BLACK)
-        init_pair(i + 3, i + 3, COLOR_BLACK)
+        init_pair(i, i, dark_background) 
+        init_pair(i + 1, i + 1, dim_background)
+        init_pair(i + 2, i + 2, normal_background)
+        init_pair(i + 3, i + 3, bright_background)
       end
-
 
       #init_pair(Colour::RED_ON_BLACK, COLOR_RED, COLOR_BLACK)
       #init_pair(Colour::GREEN_ON_BLACK, COLOR_GREEN, COLOR_BLACK)
@@ -200,6 +234,7 @@ class Window < Curses::Window
     CYAN = Colour.new(0, 900, 900)
     MAGENTA = Colour.new(900, 0, 900)
     WHITE = Colour.new(900, 900, 900)
+    #GREY = Colour.new(250, 250, 250)
     DEFAULT = WHITE
     COLOURS = [RED, GREEN, YELLOW,
                BLUE, CYAN, MAGENTA,
