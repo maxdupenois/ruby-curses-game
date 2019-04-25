@@ -15,11 +15,11 @@ module Entities::Behaviours
     end
 
     def command(command)
-      return unless self.class.allowed_commands.include?(command.message)
+      return unless self.class.allowed_commands.include?(command.message.to_sym)
 
       public_send(command.message)
     rescue StandardError => e
-      puts "#{e.class} #{e.message}"
+      current_scene.status_message("#{e.class} #{e.message}", colour: Window::Colour::RED)
     end
 
     def commandable?

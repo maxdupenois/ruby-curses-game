@@ -19,6 +19,11 @@ class GameWorld
     entities << entity
   end
 
+  def remove_entity(entity)
+    map_remove(entity.x, entity.y, entity)
+    entities.delete(entity)
+  end
+
   def time_advance(milliseconds)
     affected_by_time = entities.select(&:affected_by_time?)
     affected_by_time.each { |e| e.time_advance(milliseconds) }

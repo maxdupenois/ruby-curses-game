@@ -2,6 +2,7 @@ module Entities
   class Wolf < Entity
     include Entities::Behaviours::Moveable
     include Entities::Behaviours::Drawable
+    include Entities::Behaviours::Blocking
     include Entities::Behaviours::AffectedByTime
     char "w"
     colour Window::Colour::MAGENTA
@@ -11,7 +12,15 @@ module Entities
     def time_advance(ms)
       if can_move?(ms)
         prey = find_close_prey.first
-        prey ? move_toward(prey.x, prey.y) : wander
+        if prey
+          if distance(prey) <= 1
+            world.remove_entity(prey)
+          else
+            move_toward(prey.x, prey.y)
+          end
+        else
+          wander
+        end
         @ms_since_last_move = 0
       else
         @ms_since_last_move += ms

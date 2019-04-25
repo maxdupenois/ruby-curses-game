@@ -35,9 +35,7 @@ module Entities
 
     def move(*args)
       moved = super(*args)
-      if moved
-        current_scene.status_message("Player moved to (#{x}, #{y})", colour: Window::Colour::BLUE)
-      else
+      unless moved
         current_scene.status_message("Blocked", colour: Window::Colour::RED)
       end
     end

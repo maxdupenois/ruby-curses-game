@@ -71,18 +71,16 @@ class IdleGameScene < Scene
     player = Entities::Player.new(game_world)
     player.x = 2
     player.y = 3
-    tree = Entities::Tree.new(game_world)
-    tree.x = 4
-    tree.y = 4
-    mammal = Entities::SmallMammal.new(game_world)
-    mammal.x = 3
-    mammal.y = 3
-    wolf = Entities::Wolf.new(game_world)
-    wolf.x = 6
-    wolf.y = 6
+    creature_gen = Entities::CreatureGenerator.new(game_world)
+    creature_gen.x = game_world.width/2
+    creature_gen.y = game_world.height/2
+    game_world.add_entity(creature_gen)
     game_world.add_entity(player)
-    game_world.add_entity(wolf)
-    game_world.add_entity(mammal)
-    game_world.add_entity(tree)
+    rand(50..60).times do
+      tree = Entities::Tree.new(game_world)
+      tree.x = rand(game_world.width)
+      tree.y = rand(game_world.height)
+      game_world.add_entity(tree)
+    end
   end
 end

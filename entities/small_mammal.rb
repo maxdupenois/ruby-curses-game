@@ -6,7 +6,7 @@ module Entities
     char 'm'
     colour Window::Colour::YELLOW
 
-    MS_BETWEEN_EACH_MOVE = 500
+    MS_BETWEEN_EACH_MOVE = 200
 
     def time_advance(ms)
       if can_move?(ms)
