@@ -7,19 +7,19 @@ module Entities::Behaviours
     end
 
     module ClassMethods
-      def char(char=nil)
-        @char ||= '?'
+      def char(char = nil)
+        @char ||= "?"
         @char = char if char
         @char
       end
 
-      def colour(colour=nil)
+      def colour(colour = nil)
         @colour ||= Window::Colour::DEFAULT
         @colour = colour if colour
         @colour
       end
 
-      def draw_priority(priority=nil)
+      def draw_priority(priority = nil)
         @draw_priority ||= 1
         @draw_priority = priority if priority
         @draw_priority

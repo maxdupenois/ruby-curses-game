@@ -3,7 +3,7 @@ module Entities
     include Entities::Behaviours::Moveable
     include Entities::Behaviours::Drawable
     include Entities::Behaviours::AffectedByTime
-    char 'w'
+    char "w"
     colour Window::Colour::MAGENTA
 
     MS_BETWEEN_EACH_MOVE = 400
@@ -20,18 +20,18 @@ module Entities
 
     def wander
       move_x = rand(2) == 1
-      x = move_x ? rand(3) - 1 : 0
-      y = move_x ? 0 : rand(3) - 1
+      x = move_x ? rand(-1..1) : 0
+      y = move_x ? 0 : rand(-1..1)
       move(x, y)
     end
 
     def find_close_prey
-      world.entities_within_range(self, 5).select do |e|
+      world.entities_within_range(self, 5).select{ |e|
         e.class == Entities::SmallMammal
-      end.sort_by { |p| distance(p) }
+      }.sort_by { |p| distance(p) }
     end
 
-    def can_move?(ms)
+    def can_move?(_ms)
       @ms_since_last_move ||= 0
       @ms_since_last_move >= MS_BETWEEN_EACH_MOVE
     end

@@ -16,8 +16,9 @@ module Entities::Behaviours
 
     def command(command)
       return unless self.class.allowed_commands.include?(command.message)
-      self.send(command.message)
-    rescue => e
+
+      public_send(command.message)
+    rescue StandardError => e
       puts "#{e.class} #{e.message}"
     end
 

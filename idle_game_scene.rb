@@ -1,6 +1,6 @@
-require_relative './game_world'
-require_relative './scene'
-require_relative './entity'
+require_relative "./game_world"
+require_relative "./scene"
+require_relative "./entity"
 class IdleGameScene < Scene
   MAX_STATUS_LENGTH = 10
   attr_reader :game_world_window, :game_world, :status_window
@@ -11,19 +11,22 @@ class IdleGameScene < Scene
     status_height = Window.height - game_world_height
 
     @game_world_window = Window.new(
-      x: 0, y: 0,
-      width: Window.width,
-      height: game_world_height)
+      :x => 0, :y => 0,
+      :width => Window.width,
+      :height => game_world_height
+    )
 
     @status_window = Window.new(
-      x: 0, y: game_world_height,
-      width: Window.width,
-      height: status_height)
+      :x => 0, :y => game_world_height,
+      :width => Window.width,
+      :height => status_height
+    )
 
     @game_world = GameWorld.new(
       # - 2 to allow for border
-      width: game_world_window.width - 2,
-      height: game_world_window.height - 2)
+      :width => game_world_window.width - 2,
+      :height => game_world_window.height - 2
+    )
     load_entities!
   end
 
@@ -47,8 +50,8 @@ class IdleGameScene < Scene
     game_world_window.refresh
 
     status.reverse.each_with_index do |(message, colour), y|
-      status_window.draw(' ' * (Window.width - 3), 1, y + 1)
-      status_window.draw(message, 3, y + 1, colour: colour)
+      status_window.draw(" " * (Window.width - 3), 1, y + 1)
+      status_window.draw(message, 3, y + 1, :colour => colour)
     end
 
     status_window.refresh
@@ -63,7 +66,6 @@ class IdleGameScene < Scene
   def status
     @status ||= []
   end
-  
 
   def load_entities!
     player = Entities::Player.new(game_world)

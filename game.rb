@@ -1,8 +1,8 @@
-require './command_receiver'
+require "./command_receiver"
 
 class Game
   DESIRED_GLPS = 50
-  REQUIRED_MS_PER_GL = 1000/DESIRED_GLPS.to_f
+  REQUIRED_MS_PER_GL = 1000 / DESIRED_GLPS.to_f
   attr_reader :game_world, :command_receiver, :window, :error
 
   def initialize
@@ -38,28 +38,32 @@ class Game
   end
 
   def setup
-    raise NoMethodError.new('Should be overridden')
+    raise NoMethodError, "Should be overridden"
   end
 
   private
 
   def run_command_receiver!
-    while !finished?
+    until finished?
       command = command_receiver.receive
       finish! if command.quit?
       current_scene.command_received(command)
     end
+  rescue Interrupt => _e
+    finish!
+  ensure
+    finish!
   end
 
   def run!
     Thread.new do
       last_time_advance = Time.now.to_f
-      while !finished?
-        difference  = in_ms(Time.now.to_f - last_time_advance)
-        sleep_ms = game_loop do
+      until finished?
+        difference = in_ms(Time.now.to_f - last_time_advance)
+        sleep_ms = game_loop {
           current_scene.time_advance(difference)
           current_scene.draw
-        end
+        }
         last_time_advance = Time.now.to_f
         sleep(sleep_ms / 1000.to_f)
       end
@@ -75,7 +79,9 @@ class Game
     time_start = Time.now.to_f
     begin
       yield
-    rescue => e
+    rescue Interrupt => _e
+      finish!
+    rescue StandardError => e
       @error = e
       finish!
     end
@@ -88,11 +94,13 @@ class Game
   end
 
   def finish!
-    Window.finish #close any open screens
+    return if finished?
+
+    Window.finish # close any open screens
     @finished = true
-    if error
-      puts error.message
-      puts error.backtrace[0..5]
-    end
+    return unless error
+
+    puts error.message
+    puts error.backtrace[0..5]
   end
 end

@@ -111,17 +111,21 @@ class Window < Curses::Window
       noecho
       timeout = 0
       stdscr.keypad = true
+      init_screen
       init_colour_pairs!
       @running = true
-    rescue => e
-      finish
-      puts colors
-      puts e.message
-      puts e.backtrace[0..3]
     end
 
     def finish
       @running = false
+
+      # Attempt to reset terminal colors
+      original_colors.each_with_index do |color, num|
+        init_color(num, *color)
+      end
+      original_color_pairs.each_with_index do |color_pair, num|
+        init_pair(num, *color_pair)
+      end
       close_screen
     end
 
@@ -154,12 +158,24 @@ class Window < Curses::Window
       end
     end
 
-
     private
+    attr_reader :dark_background, :dim_background,
+                :normal_background, :bright_background,
+                :background_colour_count, :original_colors,
+                :original_color_pairs
 
-    attr_reader :dark_background, :dim_background, :normal_background, :bright_background, :background_colour_count
+    def save_original_colors!
+      @original_colors = Array.new(colors) { |i| color_content(i) }
+    end
+
+    def save_original_color_pairs!
+      @original_color_pairs = Array.new(color_pairs) { |i| pair_content(i) }
+    end
+
     def init_colour_pairs!
       start_color
+      save_original_colors!
+      save_original_color_pairs!
 
       init_color(0, 0, 0, 0)
       @dark_background = 1

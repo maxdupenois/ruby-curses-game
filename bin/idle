@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 
+#`bundle install`
+
+gemfile = File.join(File.dirname(__FILE__), "..", "Gemfile")
+puts `bundle install --gemfile=#{gemfile}`
+
 require_relative '../idle.rb'
 
 def onsig(sig)

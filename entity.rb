@@ -15,17 +15,17 @@ module Entities
       Game.current.current_scene
     end
 
-    BEHAVIOURS = [:moveable, :commandable,
-                  :light_source,
-                  :drawable, :blocking, 
-                  :affected_by_time]
+    BEHAVIOURS = %i[moveable commandable
+                    light_source
+                    drawable blocking
+                    affected_by_time].freeze
     BEHAVIOURS.each do |behaviour|
       define_method("#{behaviour}?") { false }
     end
   end
 end
-require_relative './entities/behaviour'
-require_relative './entities/player'
-require_relative './entities/tree'
-require_relative './entities/small_mammal'
-require_relative './entities/wolf'
+require_relative "./entities/behaviour"
+require_relative "./entities/player"
+require_relative "./entities/tree"
+require_relative "./entities/small_mammal"
+require_relative "./entities/wolf"
